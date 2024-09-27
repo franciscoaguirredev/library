@@ -3,9 +3,8 @@ import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { FilterBookDto } from './dto/filter-book.dto';
-import { query } from 'express';
 
-@Controller('book')
+@Controller('books')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
 
@@ -15,10 +14,15 @@ export class BookController {
   }
 
   @Get('filter')
-  findAll(@Query() query:FilterBookDto) { 
+  filter(@Query() query:FilterBookDto) { 
     if (!query.page) query.page = 1;
     if (!query.size) query.size = 30;
     return this.bookService.findWithFilter(query);
+  }
+
+  @Get()
+  findAll(){
+    return this.bookService.findAll()
   }
 
   @Get(':id')

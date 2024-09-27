@@ -9,7 +9,7 @@ export class CreateBookDto {
 
     @IsString()
     @IsNotEmpty()
-    autor: string;
+    author: string;
 
     @IsString()
     @IsNotEmpty()

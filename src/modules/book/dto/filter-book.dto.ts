@@ -20,7 +20,7 @@ export class FilterBookDto {
 
     @IsOptional()
     @IsString()
-    autor?: string;
+    author?: string;
 
     @IsOptional()
     @IsString()

@@ -11,10 +11,10 @@ export class Book {
     @Column('varchar', {length:255, nullable:false, name: 'title'})
     title:string
 
-    @Column('varchar', {length:255, nullable:false, name: 'autor'})
-    autor: string
+    @Column('varchar', {length:255, nullable:false, name: 'author'})
+    author: string
 
-     @Column('varchar', {length:20, nullable:false, name: 'genre'})
+     @Column('varchar', {length:255, nullable:false, name: 'genre'})
     genre: string
 
     @Column({name: 'datePublication', type:'timestamptz', nullable:false})
