@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -15,8 +15,13 @@ export class BookService {
     @InjectRepository(Book) private readonly bookRepository: Repository<Book>
   ){}
 
-  async create(createBook: CreateBookDto):Promise<any> {  
+
+  async create(createBook: CreateBookDto):Promise<any> {
     try {
+      const findBook = await this.findDuplicatedBook(createBook)
+      if(findBook.length > 0){ 
+      throw new ConflictException('Book duplicated')
+    }
       const newBook = await this.bookRepository.save(createBook)
       return handleResponse(newBook, 'Book created successfully', HttpStatus.CREATED);
     } catch (error) {
@@ -83,7 +88,6 @@ export class BookService {
 
       if(genre){
         filter.andWhere('book.genre ILIKE :bookGenre', {bookGenre: `%${genre}%`})
-        console.log(genre)
       }
 
       if(datePublication){
@@ -129,12 +133,24 @@ export class BookService {
     
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} book`;
+  async remove(id: string) {
+    await this.findOne(id)
+    await this.bookRepository.delete(id)
+    return handleResponse(null, 'Book deleted successfully', HttpStatus.OK);
   }
 
-  async loadBooksDefault(){
+  private async findDuplicatedBook (book:CreateBookDto){  
+  const findBook = await this.bookRepository.findBy({
+      title: book.title,
+      author: book.author,
+      genre: book.genre,
+      datePublication: book.datePublication
+    })
+    return findBook
+  }
 
+  //This function loads books in the database
+  async loadBooksDefault(){
     for (const bookData of loadBooks) {
       const book ={
       title: bookData.title,
@@ -142,17 +158,10 @@ export class BookService {
       genre: bookData.genre,
       datePublication: bookData.datePublication,
       };
-      const findbook = await this.bookRepository.findBy({
-        title: book.title,
-        author: book.author,
-        genre: book.genre,
-        datePublication: book.datePublication
-      })
-      if(findbook.length > 0){ continue}
+      const findBook:any = await this.findDuplicatedBook(book)
+      if(findBook.length > 0){ continue}
       await this.bookRepository.save(book);
     }
   } 
-
-
 }
 
