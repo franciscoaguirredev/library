@@ -107,8 +107,26 @@ export class BookService {
     }
   }
 
-  update(id: number, updateBookDto: UpdateBookDto) {
-    return `This action updates a #${id} book`;
+  async update(bookId: string, updateBookDto: UpdateBookDto){
+    try {
+      const findBook = await this.bookRepository.findOneBy({id:bookId})
+
+      if(!findBook) throw new NotFoundException(`Book with id: ${bookId} not found`)
+
+      findBook.title= updateBookDto.title
+      findBook.author=updateBookDto.author
+      findBook.genre=updateBookDto.genre
+      findBook.datePublication = updateBookDto.datePublication
+
+      const bookUpdated = await this.bookRepository.save(findBook)
+      return handleResponse(bookUpdated, 'Book updated successfully', HttpStatus.OK)
+    } catch (error) {
+      if(error instanceof NotFoundException){
+        throw error
+      }
+      handleError(error, 'Failed to updated book');
+    }
+    
   }
 
   remove(id: number) {
